@@ -1,0 +1,7 @@
+apiVersion: platform.samuel/v1
+kind: App
+metadata:
+  name: demo-app
+spec:
+  image: nginx
+  replicas: 2

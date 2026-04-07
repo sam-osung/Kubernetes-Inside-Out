@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cpu-burn-deployment
+spec:
+  replicas: 6  # enough to trigger scale-up
+  selector:
+    matchLabels:
+      app: cpu-burn
+  template:
+    metadata:
+      labels:
+        app: cpu-burn
+    spec:
+      containers:
+        - name: burn
+          image: vish/stress
+          args: ["-cpus", "1"]  # stress 1 CPU per pod
+          resources:
+            requests:
+              cpu: "1000m"  # 1 CPU, fits on c7i-flex.large
+            limits:
+              cpu: "1000m"

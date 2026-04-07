@@ -1,0 +1,16 @@
+## File values.yaml ##
+
+providers:
+  kubernetesIngress:
+    enabled: false   # disable ingress completely
+
+  kubernetesGateway:
+    enabled: true    # enable Gateway API
+
+# Allow Gateway to route across namespaces
+gateway:
+  namespacePolicy: All
+
+# Expose Traefik externally
+service:
+  type: LoadBalancer

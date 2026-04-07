@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deploy
+  namespace: dev
+spec:
+  replicas: 6                     # number of pod replicas
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        resources:
+          requests:
+            cpu: 500m             # each pod requests 0.5 CPU
+            memory: 512Mi
+          limits:
+            cpu: 1                # each pod max 1 CPU
+            memory: 1Gi

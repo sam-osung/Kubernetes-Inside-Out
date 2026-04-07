@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-checker
+spec:
+  selector:
+    matchLabels:
+      app: node-checker
+  template:
+    metadata:
+      labels:
+        app: node-checker
+    spec:
+      containers:
+      - name: node-checker
+        image: busybox
+        command:
+          - sh
+          - -c
+          - "while true; do echo running on $(hostname); sleep 30; done"

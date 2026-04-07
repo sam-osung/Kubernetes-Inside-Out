@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stress-test
+  namespace: default
+spec:
+  containers:
+  - name: stress-test
+    image: polinux/stress
+    args:
+      # Memory stress
+      - "--vm"
+      - "1"           # 1 memory worker
+      - "--vm-bytes"
+      - "650M"        # Allocate 650Mi (crossing 90% of 700Mi limit)
+      - "--vm-keep"   # Keep memory allocated
+      # CPU stress
+      - "--cpu"
+      - "1"           # 1 CPU worker
+      - "--timeout"
+      - "300s"        # Run stress for 5 minutes
+    resources:
+      limits:
+        memory: "700Mi"
+        cpu: "500m"
+      requests:
+        memory: "500Mi"
+        cpu: "250m"
+
+
+
+# Memory Limit: 700Mi
+
+# Allocated Memory: 650Mi → 650 / 700 ≈ 92.8%
+
+# Alert Rule: PodMemoryHigh fires when memory usage > 90% for 5 minutes
+
+# Prometheus sees usage > 90%, triggers PodMemoryHigh alert
+
+# Alertmanager sends the alert to Slack
+
+# Grafana dashboard updates the alert panel in real time

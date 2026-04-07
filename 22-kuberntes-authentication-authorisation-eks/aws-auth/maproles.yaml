@@ -1,0 +1,9 @@
+mapRoles: |
+  - rolearn: arn:aws:iam::<ACCOUNT_ID>:role/qa-role
+    username: qa-role
+    groups:
+      - qa-group
+  - rolearn: arn:aws:iam::<ACCOUNT_ID>:role/devops-role
+    username: devops-role
+    groups:
+      - devops-group

@@ -1,0 +1,83 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: common-k8s-alerts
+  namespace: monitoring
+  labels:
+    release: prometheus   # Must match Prometheus ruleSelector label
+spec:
+  groups:
+
+  - name: node.rules
+    rules:
+    - alert: NodeMemoryHigh
+      # Triggered when actual node memory usage exceeds 80%
+      expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+      # Alert fires only if condition stays true for 5 minutes (avoids flapping)
+      for: 5m
+      labels:
+        severity: critical  # Critical because node memory pressure can crash workloads
+      annotations:
+        summary: "Node memory usage is high"
+        description: "Node {{ $labels.instance }} memory usage is above 80%"
+
+    - alert: NodeCPUHigh
+      # Triggered when node CPU usage exceeds 85%
+      expr: (1 - avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 > 85
+      # Waits 5 minutes before firing to avoid spikes
+      for: 5m
+      labels:
+        severity: critical  # High CPU can degrade all services on the node
+      annotations:
+        summary: "Node CPU usage is high"
+        description: "Node {{ $labels.instance }} CPU usage is above 85%"
+
+  - name: pod.rules
+    rules:
+    - alert: PodMemoryHigh
+      # Triggered when a pod exceeds 90% of its defined memory limit
+      expr: (container_memory_working_set_bytes{container!="",image!=""} 
+            / container_spec_memory_limit_bytes{container!="",image!=""}) * 100 > 90
+      # Fires only if sustained for 5 minutes
+      for: 5m
+      labels:
+        severity: warning  # Warning because pod may soon be OOMKilled
+      annotations:
+        summary: "Pod memory usage is high"
+        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} memory > 90%"
+
+    - alert: PodRestartHigh
+      # Triggered when a pod restarts more than 3 times within 10 minutes
+      expr: sum by(pod, namespace) (increase(kube_pod_container_status_restarts_total[10m])) > 3
+      # Wait 5 minutes to confirm instability
+      for: 5m
+      labels:
+        severity: warning  # Warning because frequent restarts indicate instability
+      annotations:
+        summary: "Pod restart count is high"
+        description: "Pod {{ $labels.pod }} restarted more than 3 times in 10 minutes"
+
+  - name: kube.rules
+    rules:
+    - alert: DeploymentReplicasMismatch
+      # Triggered when a deployment has unavailable replicas
+      expr: kube_deployment_status_replicas_unavailable > 0
+      # Fires after 5 minutes of mismatch
+      for: 5m
+      labels:
+        severity: warning  # Warning since service availability may be degraded
+      annotations:
+        summary: "Deployment has unavailable replicas"
+        description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has unavailable replicas"
+
+    - alert: NodeDiskSpaceLow
+      # Triggered when available disk space on a node drops below 15%
+      expr: (node_filesystem_avail_bytes{fstype!="tmpfs",mountpoint!="/run"} 
+            / node_filesystem_size_bytes{fstype!="tmpfs",mountpoint!="/run"}) * 100 < 15
+      # Fires only if disk pressure persists for 10 minutes
+      for: 10m
+      labels:
+        severity: critical  # Critical because disk exhaustion can break the node
+      annotations:
+        summary: "Node disk space low"
+        description: "Node {{ $labels.instance }} disk space < 15%"

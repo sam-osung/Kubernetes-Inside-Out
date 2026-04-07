@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-configmap
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-configmap
+  template:
+    metadata:
+      labels:
+        app: nginx-configmap
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE_URL
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: APP_MODE

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slack-webhook
+  namespace: monitoring
+  labels:
+    release: prometheus
+type: Opaque
+stringData:
+  slack_webhook_url: 'https://hooks.slack.com/services/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'
+
+---
+
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: slack-alertmanager-config
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  route:
+    groupBy: ['alertname']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 1h
+    receiver: 'slack-notification'
+
+  receivers:
+    - name: 'slack-notification'
+      slackConfigs:
+        - channel: '#alerts'
+          apiURL:
+            name: slack-webhook
+            key: slack_webhook_url
+          sendResolved: true
+          title: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+          text: "{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"

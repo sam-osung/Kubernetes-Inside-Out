@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-nodeselector
+spec:
+  nodeSelector:
+    role: db
+  containers:
+  - name: app
+    image: nginx

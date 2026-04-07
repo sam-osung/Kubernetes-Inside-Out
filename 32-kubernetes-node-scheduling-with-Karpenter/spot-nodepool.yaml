@@ -1,0 +1,19 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: spot
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        name: default
+      requirements:
+        - key: node.kubernetes.io/instance-lifecycle
+          operator: In
+          values: ["spot"]
+      labels:
+        workload: spot
+  limits:
+    cpu: "2000"
+  disruption:
+    consolidationPolicy: WhenEmpty

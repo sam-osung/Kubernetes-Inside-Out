@@ -1,0 +1,26 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: karpenter-demo
+  region: us-east-1
+
+iam:
+  withOIDC: true
+
+managedNodeGroups:
+  - name: bootstrap
+    instanceType: t3.small
+    desiredCapacity: 1
+    minSize: 1
+    maxSize: 2
+
+vpc:
+  subnets:
+    private:
+      us-east-1a:
+        tags:
+          karpenter.sh/discovery: karpenter-demo
+      us-east-1b:
+        tags:
+          karpenter.sh/discovery: karpenter-demo

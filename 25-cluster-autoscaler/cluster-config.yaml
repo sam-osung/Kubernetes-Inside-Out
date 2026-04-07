@@ -1,0 +1,19 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: my-eks-cluster
+  region: us-east-1
+
+iam:
+  withOIDC: true  # Enables OIDC provider for IRSA
+
+managedNodeGroups:
+  - name: workers
+    instanceType: c7i-flex.large
+    desiredCapacity: 4
+    minSize: 2
+    maxSize: 10
+    tags:
+      k8s.io/cluster-autoscaler/enabled: "true"     # Allows CA to manage this node group
+      k8s.io/cluster-autoscaler/my-eks-cluster: "owned"  # Associates with this specific cluster

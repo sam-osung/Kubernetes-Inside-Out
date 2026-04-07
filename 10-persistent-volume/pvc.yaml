@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""   # important! tells Kubernetes to only use static PVs
+  resources:
+    requests:
+      storage: 1Gi

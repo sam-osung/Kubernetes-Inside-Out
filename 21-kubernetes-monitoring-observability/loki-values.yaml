@@ -1,0 +1,46 @@
+# loki-values.yaml for existing KPS setup
+
+loki:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClassName: "gp2"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  # Ensure Loki is reachable by Promtail
+  service:
+    type: ClusterIP
+    port: 3100
+
+promtail:
+  enabled: true
+  # Promtail retries and waits for Loki
+  extraArgs:
+    - "-client.url=http://loki:3100/loki/api/v1/push"
+    - "-client.backoff-config.max-period=10s"
+    - "-client.backoff-config.min-period=1s"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  # Init container to ensure Loki is ready before Promtail starts
+  initContainers:
+    - name: wait-for-loki
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+          until wget -qO- http://loki:3100/ready; do
+            echo "waiting for Loki..."
+            sleep 2
+          done

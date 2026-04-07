@@ -1,0 +1,23 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: high-cpu
+spec:
+  template:
+    spec:
+      nodeClassRef:
+        name: default
+      requirements:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ["c5.large","c5.xlarge"]
+      taints:
+        - key: dedicated
+          value: high-cpu
+          effect: NoSchedule
+      labels:
+        workload: high-cpu
+  limits:
+    cpu: "4000"
+  disruption:
+    consolidationPolicy: WhenEmpty
